@@ -106,6 +106,20 @@ export const PROFESSIONAL_PRESETS: FilterPresetDefinition[] = [
     }
   },
   {
+    id: 'soft_focus',
+    name: 'Soft Focus',
+    tagline: 'Smoothen your appearance for a polished look.',
+    badge: 'Polished',
+    settings: {
+      smoothness: 50,
+      warmth: 6,
+      tint: 2,
+      brightness: 4,
+      contrast: 2,
+      saturation: 4
+    }
+  },
+  {
     id: 'soft_touchup',
     name: 'Touch-Up Flawless',
     tagline: 'Diffuses blemishes, wrinkles, and sensor grain while keeping eyes sharp',

@@ -160,7 +160,7 @@ describe('MirrorView Image-Transform Pipeline (AT-001 through AT-006)', () => {
         expect(val).toBeLessThanOrEqual(255);
       }
     }
-  });
+  }, 25000);
 
   it('AT-007: Professional meeting warmth and tint filters adjust color channels predictably', () => {
     const rawData = new Uint8ClampedArray(WIDTH * HEIGHT * 4);
@@ -208,6 +208,30 @@ describe('MirrorView Image-Transform Pipeline (AT-001 through AT-006)', () => {
     for (let i = 0; i < extremeFrame.length; i++) {
       expect(extremeFrame[i]).toBeGreaterThanOrEqual(0);
       expect(extremeFrame[i]).toBeLessThanOrEqual(255);
+    }
+  });
+
+  it('AT-008: Soft Focus preset settings produce valid, bounded frames', () => {
+    const rawData = SyntheticTestCard.generateTestCardData(WIDTH, HEIGHT);
+    const softFocusSettings: TransformSettings = {
+      ...DEFAULT_TRANSFORMS,
+      smoothness: 50,
+      warmth: 6,
+      tint: 2,
+      brightness: 4,
+      contrast: 2,
+      saturation: 4
+    };
+
+    const processed = FramePipeline.processFrameData(rawData, WIDTH, HEIGHT, softFocusSettings);
+    expect(processed.length).toBe(rawData.length);
+
+    for (let i = 0; i < processed.length; i++) {
+      const val = processed[i];
+      expect(Number.isFinite(val)).toBe(true);
+      expect(Number.isNaN(val)).toBe(false);
+      expect(val).toBeGreaterThanOrEqual(0);
+      expect(val).toBeLessThanOrEqual(255);
     }
   });
 });

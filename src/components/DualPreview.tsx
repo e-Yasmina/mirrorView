@@ -92,8 +92,8 @@ export const DualPreview: React.FC<DualPreviewProps> = ({
           }, 'image/jpeg', 0.85);
         }
 
-        // 2. If in Test Card mode, also draw to local canvas with local preview mirror
-        if (isTestCard && localCanvas) {
+        // 2. Render processed Local Self-View Preview (Local Mirror + Skin Smoothing + Color Calibration)
+        if (localCanvas) {
           FramePipeline.renderToCanvas(sourceElement, localCanvas, settings, true);
         }
       }
@@ -141,26 +141,27 @@ export const DualPreview: React.FC<DualPreviewProps> = ({
             <span>Local Mirror: {settings.previewMirror ? 'Active' : 'Unmirrored'}</span>
           </div>
 
-          {/* Test Card Canvas (rendered when in testCardMode) */}
+          {/* Local Canvas: Renders full enhancement pipeline (Smoothing, Warmth, Tint) with Local Mirror */}
           <canvas
             ref={localCanvasRef}
             width={1280}
             height={720}
             className="viewport-canvas"
-            style={{ display: isTestMode ? 'block' : 'none' }}
+            style={{ display: (isLive || isTestMode) ? 'block' : 'none' }}
           />
 
-          {/* Video element ALWAYS mounted to preserve ref binding and immediate feed */}
+          {/* Backing Video Element: Active frame provider for canvas pipeline */}
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            className="viewport-video"
             style={{
-              display: (isLive && !isTestMode) ? 'block' : 'none',
-              transform: settings.previewMirror ? 'scaleX(-1)' : 'none',
-              filter: `brightness(${100 + settings.brightness}%) contrast(${100 + settings.contrast}%) saturate(${100 + settings.saturation}%)`
+              position: 'absolute',
+              width: '1px',
+              height: '1px',
+              opacity: 0,
+              pointerEvents: 'none'
             }}
             onLoadedMetadata={e => {
               e.currentTarget.play().catch(console.warn);

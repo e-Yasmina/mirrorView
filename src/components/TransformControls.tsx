@@ -108,19 +108,19 @@ export const TransformControls: React.FC<TransformControlsProps> = ({
         </div>
       </div>
 
-      {/* 2. Imperfection Touch-Up & Beauty Filter */}
+      {/* 2. Soft Focus (Skin Smoothing) */}
       <div className="touchup-card">
         <div className="control-label-group">
           <label className="control-label" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
             <Sparkles size={16} color="var(--accent-purple)" />
-            <span style={{ fontWeight: 600, color: '#e2e8f0' }}>Imperfection Touch-Up (Skin Smoothing)</span>
+            <span style={{ fontWeight: 600, color: '#e2e8f0' }}>Soft Focus</span>
           </label>
           <span className="control-value" style={{ color: 'var(--accent-purple)' }}>
             {settings.smoothness ? `${settings.smoothness}%` : 'Off (0%)'}
           </span>
         </div>
         <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-          Diffuses blemishes, fine lines, and webcam grain while preserving tack-sharp eyes and facial contours.
+          Smoothen your appearance for a polished look.
         </p>
         <input
           type="range"
