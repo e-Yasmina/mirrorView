@@ -30,6 +30,7 @@ export interface TransformSettings {
   contrast: number;           // -100 to 100 (neutral: 0)
   saturation: number;         // -100 to 100 (neutral: 0)
   smoothness: number;         // 0 to 100 (Skin smoothing / imperfection touch-up, neutral: 0)
+  beautyEngine: 'opencv' | 'mediapipe'; // 'opencv' = C++ edge-preserving bilateral filter via streamer; 'mediapipe' = AI face-mesh skin masking
   warmth: number;             // -50 to 50 (Color temp: negative=cool daylight, positive=warm gold, neutral: 0)
   tint: number;               // -50 to 50 (Tint: negative=green balance, positive=magenta glow, neutral: 0)
   filterPreset: string;       // Active preset ID ('none' | 'natural_glow' | 'executive' | etc.)
@@ -142,6 +143,7 @@ export const DEFAULT_TRANSFORMS: TransformSettings = {
   contrast: 0,
   saturation: 0,
   smoothness: 0,
+  beautyEngine: 'mediapipe',
   warmth: 0,
   tint: 0,
   filterPreset: 'none',

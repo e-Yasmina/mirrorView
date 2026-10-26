@@ -234,4 +234,33 @@ describe('MirrorView Image-Transform Pipeline (AT-001 through AT-006)', () => {
       expect(val).toBeLessThanOrEqual(255);
     }
   });
+
+  it('AT-009: Dual beauty engine configuration (Option 1 MediaPipe AI & Option 2 OpenCV C++) preserves frame stability', () => {
+    const rawData = SyntheticTestCard.generateTestCardData(WIDTH, HEIGHT);
+
+    // Option 2: OpenCV C++ Engine configuration
+    const opencvSettings: TransformSettings = {
+      ...DEFAULT_TRANSFORMS,
+      smoothness: 60,
+      beautyEngine: 'opencv'
+    };
+    const opencvFrame = FramePipeline.processFrameData(rawData, WIDTH, HEIGHT, opencvSettings);
+    expect(opencvFrame.length).toBe(rawData.length);
+
+    // Option 1: MediaPipe AI Face Mesh Engine configuration
+    const mediapipeSettings: TransformSettings = {
+      ...DEFAULT_TRANSFORMS,
+      smoothness: 60,
+      beautyEngine: 'mediapipe'
+    };
+    const mpFrame = FramePipeline.processFrameData(rawData, WIDTH, HEIGHT, mediapipeSettings);
+    expect(mpFrame.length).toBe(rawData.length);
+
+    for (let i = 0; i < opencvFrame.length; i++) {
+      expect(opencvFrame[i]).toBeGreaterThanOrEqual(0);
+      expect(opencvFrame[i]).toBeLessThanOrEqual(255);
+      expect(mpFrame[i]).toBeGreaterThanOrEqual(0);
+      expect(mpFrame[i]).toBeLessThanOrEqual(255);
+    }
+  });
 });

@@ -9,7 +9,8 @@ import {
   Thermometer,
   Palette,
   BookmarkCheck,
-  Check
+  Check,
+  Cpu
 } from 'lucide-react';
 import { TransformSettings, PROFESSIONAL_PRESETS, FilterPresetDefinition } from '../types/camera';
 
@@ -33,7 +34,7 @@ export const TransformControls: React.FC<TransformControlsProps> = ({
     });
   };
 
-  const handleSliderChange = (field: keyof TransformSettings, value: number) => {
+  const handleSliderChange = <K extends keyof TransformSettings>(field: K, value: TransformSettings[K]) => {
     onChange({
       [field]: value,
       filterPreset: 'custom'
@@ -108,19 +109,19 @@ export const TransformControls: React.FC<TransformControlsProps> = ({
         </div>
       </div>
 
-      {/* 2. Soft Focus (Skin Smoothing) */}
+      {/* 2. Skin Smoothing (Skin Smoothing & Engine Selection) */}
       <div className="touchup-card">
         <div className="control-label-group">
           <label className="control-label" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
             <Sparkles size={16} color="var(--accent-purple)" />
-            <span style={{ fontWeight: 600, color: '#e2e8f0' }}>Soft Focus</span>
+            <span style={{ fontWeight: 600, color: '#e2e8f0' }}>Skin Smoothing</span>
           </label>
           <span className="control-value" style={{ color: 'var(--accent-purple)' }}>
             {settings.smoothness ? `${settings.smoothness}%` : 'Off (0%)'}
           </span>
         </div>
         <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-          Smoothen your appearance for a polished look.
+          Reduce the look of spots and uneven texture on the tracked face while keeping the room sharp.
         </p>
         <input
           type="range"
@@ -130,6 +131,23 @@ export const TransformControls: React.FC<TransformControlsProps> = ({
           onChange={(e) => handleSliderChange('smoothness', parseInt(e.target.value, 10))}
           className="slider-input slider-purple"
         />
+
+        {/* Face-aware engine; full-frame blur is intentionally not used. */}
+        <div className="engine-toggle-group">
+          <div className="engine-label-row">
+            <span>Smoothing mode:</span>
+            <span style={{ color: 'var(--accent-purple)' }}>Face-Aware</span>
+          </div>
+          <div className="engine-desc-box">
+            <div className="engine-desc-title">
+              <Cpu size={13} color="var(--accent-purple)" />
+              <span>AI Face Mesh</span>
+            </div>
+            <div className="engine-desc-text">
+              Softens within the tracked face outline. The effect stays off until a face is detected, so the background remains sharp.
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* 3. Color Temperature & Lighting Calibration */}

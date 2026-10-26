@@ -90,6 +90,7 @@ export class VirtualCameraBridge {
       this.socket.onopen = () => {
         this.isConnecting = false;
         this.state.statusMessage = 'Connected to virtual camera streaming bridge';
+        this.sendFilterConfig(this.lastEngine as any, this.lastSmoothness);
         this.notify();
       };
 
@@ -125,6 +126,25 @@ export class VirtualCameraBridge {
     if (this.socket) {
       this.socket.close();
       this.socket = null;
+    }
+  }
+
+  private lastEngine: string = 'mediapipe';
+  private lastSmoothness: number = 0;
+
+  public sendFilterConfig(beautyEngine: 'opencv' | 'mediapipe', smoothness: number): void {
+    this.lastEngine = beautyEngine;
+    this.lastSmoothness = smoothness;
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      try {
+        this.socket.send(JSON.stringify({
+          action: 'set_filter',
+          beautyEngine,
+          smoothness
+        }));
+      } catch (err) {
+        console.warn('Failed to send filter config to streamer:', err);
+      }
     }
   }
 

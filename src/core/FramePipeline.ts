@@ -1,4 +1,5 @@
 import { TransformSettings } from '../types/camera';
+import { MediaPipeBeautyFilter } from './MediaPipeBeautyFilter';
 
 /**
  * Pure mathematical pixel transformations for MirrorView.
@@ -154,19 +155,18 @@ export class FramePipeline {
     ctx.filter = `brightness(${Math.max(0, bPercent)}%) contrast(${Math.max(0, cPercent)}%) saturate(${Math.max(0, sPercent)}%)`;
     ctx.drawImage(source, 0, 0, width, height);
 
-    // 2. Skin Smoothing / Soft Focus ("Beauty Touch-Up & Imperfection Blur")
-    // Blends a soft diffused layer with 'soft-light' composite mode.
-    // Softens skin blemishes, fine lines, and webcam sensor grain while keeping eyes and mouth tack-sharp.
+    // 2. Face-aware skin softening. Do not blur the full frame while the model
+    // loads or when a face cannot be tracked; a raw frame is safer than a blurred room.
     const smoothness = settings.smoothness || 0;
     if (smoothness > 0) {
-      ctx.save();
-      const blurPx = (smoothness / 100) * 4.5 + 0.8;
-      const alpha = (smoothness / 100) * 0.48;
-      ctx.filter = `blur(${blurPx.toFixed(1)}px)`;
-      ctx.globalAlpha = alpha;
-      ctx.globalCompositeOperation = 'soft-light';
-      ctx.drawImage(source, 0, 0, width, height);
-      ctx.restore();
+      const mpFilter = MediaPipeBeautyFilter.getInstance();
+      if (mpFilter.isFilterReady()) {
+        mpFilter.applySkinSmoothing(source, targetCanvas, smoothness);
+      } else {
+        // Trigger asynchronous lazy init. Leave this frame untouched until a
+        // face outline is available rather than applying a full-frame blur.
+        mpFilter.initialize().catch(() => {});
+      }
     }
 
     // 3. Color Temperature (Warmth)

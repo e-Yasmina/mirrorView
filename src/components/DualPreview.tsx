@@ -50,6 +50,14 @@ export const DualPreview: React.FC<DualPreviewProps> = ({
     }
   }, [stream, videoRef]);
 
+  // Transmit filter updates to the Virtual Camera Python streamer
+  useEffect(() => {
+    VirtualCameraBridge.getInstance().sendFilterConfig(
+      'mediapipe',
+      settings.smoothness || 0
+    );
+  }, [settings.smoothness]);
+
   // Render loop for Outgoing Feed canvas
   useEffect(() => {
     let active = true;
