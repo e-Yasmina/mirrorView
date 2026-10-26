@@ -161,4 +161,53 @@ describe('MirrorView Image-Transform Pipeline (AT-001 through AT-006)', () => {
       }
     }
   });
+
+  it('AT-007: Professional meeting warmth and tint filters adjust color channels predictably', () => {
+    const rawData = new Uint8ClampedArray(WIDTH * HEIGHT * 4);
+    // Fill with neutral mid-gray [128, 128, 128, 255]
+    for (let i = 0; i < rawData.length; i += 4) {
+      rawData[i] = 128;
+      rawData[i + 1] = 128;
+      rawData[i + 2] = 128;
+      rawData[i + 3] = 255;
+    }
+
+    // Warmth +25 should increase Red and decrease Blue
+    const warmFrame = FramePipeline.processFrameData(rawData, WIDTH, HEIGHT, {
+      ...DEFAULT_TRANSFORMS,
+      warmth: 25
+    });
+    expect(warmFrame[0]).toBeGreaterThan(128); // R increased
+    expect(warmFrame[2]).toBeLessThan(128);    // B decreased
+
+    // Coolness -25 should increase Blue and decrease Red
+    const coolFrame = FramePipeline.processFrameData(rawData, WIDTH, HEIGHT, {
+      ...DEFAULT_TRANSFORMS,
+      warmth: -25
+    });
+    expect(coolFrame[0]).toBeLessThan(128);    // R decreased
+    expect(coolFrame[2]).toBeGreaterThan(128); // B increased
+
+    // Tint (rose/magenta +25) should increase Red/Blue and decrease Green
+    const roseFrame = FramePipeline.processFrameData(rawData, WIDTH, HEIGHT, {
+      ...DEFAULT_TRANSFORMS,
+      tint: 25
+    });
+    expect(roseFrame[1]).toBeLessThan(128);    // G decreased (neutralizing fluorescent green)
+
+    // Extreme combined preset filters should remain strictly bounded [0, 255]
+    const extremeFrame = FramePipeline.processFrameData(rawData, WIDTH, HEIGHT, {
+      ...DEFAULT_TRANSFORMS,
+      brightness: 50,
+      contrast: 50,
+      saturation: 50,
+      warmth: 50,
+      tint: 50,
+      smoothness: 100
+    });
+    for (let i = 0; i < extremeFrame.length; i++) {
+      expect(extremeFrame[i]).toBeGreaterThanOrEqual(0);
+      expect(extremeFrame[i]).toBeLessThanOrEqual(255);
+    }
+  });
 });
