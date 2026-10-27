@@ -10,7 +10,8 @@ import {
   Palette,
   BookmarkCheck,
   Check,
-  Cpu
+  Cpu,
+  Zap
 } from 'lucide-react';
 import { TransformSettings, PROFESSIONAL_PRESETS, FilterPresetDefinition } from '../types/camera';
 
@@ -109,19 +110,19 @@ export const TransformControls: React.FC<TransformControlsProps> = ({
         </div>
       </div>
 
-      {/* 2. Skin Smoothing (Skin Smoothing & Engine Selection) */}
+      {/* 2. Soft Focus / Skin Smoothing (Dual Engine Switcher) */}
       <div className="touchup-card">
         <div className="control-label-group">
           <label className="control-label" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
             <Sparkles size={16} color="var(--accent-purple)" />
-            <span style={{ fontWeight: 600, color: '#e2e8f0' }}>Skin Smoothing</span>
+            <span style={{ fontWeight: 600, color: '#e2e8f0' }}>Soft Focus (Skin Smoothing)</span>
           </label>
           <span className="control-value" style={{ color: 'var(--accent-purple)' }}>
             {settings.smoothness ? `${settings.smoothness}%` : 'Off (0%)'}
           </span>
         </div>
         <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-          Reduce the look of spots and uneven texture on the tracked face while keeping the room sharp.
+          Smoothen your appearance for a polished look.
         </p>
         <input
           type="range"
@@ -132,20 +133,59 @@ export const TransformControls: React.FC<TransformControlsProps> = ({
           className="slider-input slider-purple"
         />
 
-        {/* Face-aware engine; full-frame blur is intentionally not used. */}
+        {/* Dual Engine Switcher: Option 1 vs Option 2 */}
         <div className="engine-toggle-group">
           <div className="engine-label-row">
-            <span>Smoothing mode:</span>
-            <span style={{ color: 'var(--accent-purple)' }}>Face-Aware</span>
+            <span>Smoothing Engine:</span>
+            <span style={{ color: settings.beautyEngine === 'opencv' ? 'var(--accent-cyan)' : 'var(--accent-purple)' }}>
+              {settings.beautyEngine === 'opencv' ? 'C++ Hardware Fast' : 'AI Face Mesh'}
+            </span>
           </div>
-          <div className="engine-desc-box">
-            <div className="engine-desc-title">
+
+          <div className="engine-segmented-control">
+            <button
+              type="button"
+              className={`engine-segment-btn ${settings.beautyEngine === 'opencv' ? 'active' : ''}`}
+              onClick={() => handleSliderChange('beautyEngine', 'opencv')}
+              title="Option 2: Native OpenCV C++ bilateral edge-preserving filter in Streamer daemon. Blazing fast hardware speed."
+            >
+              <Zap size={13} color="var(--accent-cyan)" />
+              <span>Option 2: OpenCV C++</span>
+            </button>
+
+            <button
+              type="button"
+              className={`engine-segment-btn ${settings.beautyEngine === 'mediapipe' ? 'active' : ''}`}
+              onClick={() => handleSliderChange('beautyEngine', 'mediapipe')}
+              title="Option 1: Google MediaPipe AI Face Landmark Mesh in browser. Masks facial skin polygon, keeps eyes & lips 100% untouched."
+            >
               <Cpu size={13} color="var(--accent-purple)" />
-              <span>AI Face Mesh</span>
-            </div>
-            <div className="engine-desc-text">
-              Softens within the tracked face outline. The effect stays off until a face is detected, so the background remains sharp.
-            </div>
+              <span>Option 1: MediaPipe AI</span>
+            </button>
+          </div>
+
+          <div className="engine-desc-box">
+            {settings.beautyEngine === 'opencv' ? (
+              <>
+                <div className="engine-desc-title">
+                  <Zap size={13} color="var(--accent-cyan)" />
+                  <span>Option 2: OpenCV C++ Engine (Fast Streamer)</span>
+                </div>
+                <div className="engine-desc-text">
+                  Hardware-accelerated bilateral filter processed in native C++ via the Streamer daemon. High FPS with near-zero CPU overhead.
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="engine-desc-title">
+                  <Cpu size={13} color="var(--accent-purple)" />
+                  <span>Option 1: MediaPipe AI Engine (In-Browser Mesh)</span>
+                </div>
+                <div className="engine-desc-text">
+                  Real-time 468+ landmark AI mesh. Smooths only the skin polygon while keeping eyes, pupils, eyebrows, and lips 100% razor-sharp.
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

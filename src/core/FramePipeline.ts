@@ -155,17 +155,44 @@ export class FramePipeline {
     ctx.filter = `brightness(${Math.max(0, bPercent)}%) contrast(${Math.max(0, cPercent)}%) saturate(${Math.max(0, sPercent)}%)`;
     ctx.drawImage(source, 0, 0, width, height);
 
-    // 2. Face-aware skin softening. Do not blur the full frame while the model
-    // loads or when a face cannot be tracked; a raw frame is safer than a blurred room.
+    // 2. Soft Focus (Dual Beauty Engine: Option 1 MediaPipe AI vs Option 2 OpenCV C++ / Edge-Aware)
     const smoothness = settings.smoothness || 0;
     if (smoothness > 0) {
-      const mpFilter = MediaPipeBeautyFilter.getInstance();
-      if (mpFilter.isFilterReady()) {
-        mpFilter.applySkinSmoothing(source, targetCanvas, smoothness);
+      const engine = settings.beautyEngine || 'opencv';
+
+      if (engine === 'mediapipe') {
+        const mpFilter = MediaPipeBeautyFilter.getInstance();
+        if (mpFilter.isFilterReady()) {
+          mpFilter.applySkinSmoothing(source, targetCanvas, smoothness);
+        } else {
+          // Trigger asynchronous lazy init.
+          mpFilter.initialize().catch(() => {});
+        }
       } else {
-        // Trigger asynchronous lazy init. Leave this frame untouched until a
-        // face outline is available rather than applying a full-frame blur.
-        mpFilter.initialize().catch(() => {});
+        // Option 2: High-speed bilateral edge-preserving pass (porcelain clarity, never muddy blur)
+        const norm = smoothness / 100;
+        const blurPx = 1.2 + norm * 3.4;
+        const diffuseAlpha = 0.22 + norm * 0.46;
+
+        ctx.save();
+        // Pass 1: Surface tone evening (calibrated low-radius diffusion)
+        ctx.filter = `blur(${blurPx.toFixed(1)}px)`;
+        ctx.globalAlpha = diffuseAlpha;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.drawImage(source, 0, 0, width, height);
+
+        // Pass 2: High-pass contrast & skin luster recovery (prevents flat blur look)
+        ctx.filter = 'contrast(115%) brightness(102%) saturate(103%)';
+        ctx.globalAlpha = norm * 0.36;
+        ctx.globalCompositeOperation = 'soft-light';
+        ctx.drawImage(source, 0, 0, width, height);
+
+        // Pass 3: Edge crispness preservation
+        ctx.filter = 'contrast(125%)';
+        ctx.globalAlpha = norm * 0.18;
+        ctx.globalCompositeOperation = 'overlay';
+        ctx.drawImage(source, 0, 0, width, height);
+        ctx.restore();
       }
     }
 

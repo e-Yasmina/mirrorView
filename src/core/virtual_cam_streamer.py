@@ -77,6 +77,7 @@ def apply_opencv_beauty_filter(bgr_img: np.ndarray, smoothness: int) -> np.ndarr
     Applies Option 2: High-speed OpenCV bilateral edge-preserving filter in native C++.
     Selectively diffuses low-contrast skin surface textures (blemishes, pores, sensor noise)
     while preserving high-contrast facial contours (eyes, pupils, eyebrows, eyelashes, lips).
+    Includes high-frequency detail recovery so skin looks smooth, clean, and never blurry.
     """
     if not OPENCV_AVAILABLE or smoothness <= 0:
         return bgr_img
@@ -87,15 +88,19 @@ def apply_opencv_beauty_filter(bgr_img: np.ndarray, smoothness: int) -> np.ndarr
     # Downscale to half resolution for ultra-low latency (<20ms) C++ bilateral filtering
     small = cv2.resize(bgr_img, (w // 2, h // 2), interpolation=cv2.INTER_LINEAR)
 
-    d = 9
-    sigma_color = int(norm * 65 + 15)
-    sigma_space = int(norm * 45 + 15)
+    d = 7
+    sigma_color = int(norm * 55 + 15)
+    sigma_space = int(norm * 35 + 15)
 
     smooth_small = cv2.bilateralFilter(small, d, sigma_color, sigma_space)
     smooth_full = cv2.resize(smooth_small, (w, h), interpolation=cv2.INTER_LINEAR)
 
-    alpha = min(0.95, norm * 0.90)
+    alpha = min(0.85, norm * 0.78 + 0.10)
     blended = cv2.addWeighted(smooth_full, alpha, bgr_img, 1.0 - alpha, 0)
+
+    # Edge and detail preservation: sharpen high-contrast edges so eyes, brows, and hair stay tack-sharp
+    detail = cv2.subtract(bgr_img, smooth_full)
+    blended = cv2.addWeighted(blended, 1.0, detail, float(norm * 0.35), 0)
     return blended
 
 async def stream_handler(websocket):
