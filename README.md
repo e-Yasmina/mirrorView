@@ -12,6 +12,12 @@
 - **Independent Orientation Pipeline**:
   - Mirroring your local preview never alters the outgoing feed.
   - Horizontally flipping the outgoing feed reverses the transmitted video frames exactly once.
+- **Professional 1-Click Meeting Looks & Presets**:
+  - Pre-calibrated looks for every meeting scenario: **Natural Glow**, **Executive Studio**, **Warm Sunlight**, **Office Light Fix**, **Touch-Up Flawless**, and **Soft Focus**.
+  - **Color Temperature (Warmth)** and **Office Fluorescent Tint** sliders to eliminate harsh fluorescent greens and cold lighting.
+- **Dual Beauty & Skin Smoothing Engines**:
+  - **Option 1: MediaPipe AI Face Mesh**: 468+ point facial landmark tracker in browser WASM. Cuts out eyes, brows, and lips with an `evenodd` Path2D skin polygon, keeping gaze, eyelashes, and smile razor-sharp while gently smoothing skin texture. Includes nose-movement adaptive temporal landmark stabilization.
+  - **Option 2: OpenCV C++ Hardware Bilateral Filter**: Low-latency edge-preserving bilateral filtering in the native streamer daemon with high-frequency contour subtraction to retain tack-sharp eye and facial contours at full frame rates.
 - **Lighting & Color Calibration**:
   - Real-time **Brightness**, **Contrast**, and **Saturation** controls (-100 to +100).
   - Single-click **Reset to Neutral** restoring neutral (0) defaults.
@@ -49,7 +55,7 @@
 npm install
 ```
 
-### 3. Run Automated Acceptance Tests (AT-001 to AT-006)
+### 3. Run Automated Acceptance Tests (AT-001 to AT-009)
 ```bash
 npm test
 ```
